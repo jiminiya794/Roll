@@ -124,14 +124,15 @@
       ctx.beginPath(); ctx.moveTo(-29, 10); ctx.lineTo(-43, 23); ctx.moveTo(29, 10); ctx.lineTo(43, 23); ctx.stroke();
       ctx.strokeStyle = '#3e352f'; ctx.lineWidth = 10; ctx.beginPath(); ctx.moveTo(-16, 33); ctx.lineTo(-27, 43); ctx.moveTo(16, 33); ctx.lineTo(27, 43); ctx.stroke();
       ctx.restore();
-      if (now < person.speechUntil) {
-        const a = Math.min(1, (person.speechUntil - now) / 120);
-        ctx.save(); ctx.globalAlpha = Math.min(1, a * 1.4); ctx.translate(person.x, person.y - person.r - 34);
-        ctx.font = '700 18px system-ui, sans-serif'; const label = person.speech; const bubbleWidth = ctx.measureText(label).width + 26;
-        const isOuch = label === '아야.';
-        ctx.fillStyle = isOuch ? '#df4c45' : '#fffdf8'; ctx.beginPath(); ctx.roundRect(-bubbleWidth / 2, -18, bubbleWidth, 35, 17); ctx.fill();
-        ctx.fillStyle = isOuch ? '#ffffff' : '#3e352f'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, 0, 0); ctx.restore();
-      }
+    }
+    function drawSpeech(person, now) {
+      if (now >= person.speechUntil) return;
+      const a = Math.min(1, (person.speechUntil - now) / 120);
+      ctx.save(); ctx.globalAlpha = Math.min(1, a * 1.4); ctx.translate(person.x, person.y - person.r - 34);
+      ctx.font = '700 18px system-ui, sans-serif'; const label = person.speech; const bubbleWidth = ctx.measureText(label).width + 26;
+      const isOuch = label === '아야.';
+      ctx.fillStyle = isOuch ? '#ff2020' : '#fffdf8'; ctx.beginPath(); ctx.roundRect(-bubbleWidth / 2, -18, bubbleWidth, 35, 17); ctx.fill();
+      ctx.fillStyle = isOuch ? '#ffffff' : '#3e352f'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, 0, 0); ctx.restore();
     }
     function frame(now) {
       const dt = Math.min(2.2, (now - last) / 16.67); last = now;
@@ -150,6 +151,8 @@
       });
       collidePeople(now);
       people.forEach(person => drawPerson(person, now));
+      people.filter(person => person.speech !== '아야.').forEach(person => drawSpeech(person, now));
+      people.filter(person => person.speech === '아야.').forEach(person => drawSpeech(person, now));
       if (pointer.active) { ctx.strokeStyle = 'rgba(62,53,47,.45)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(pointer.x, pointer.y, 8, 0, Math.PI * 2); ctx.stroke(); }
       requestAnimationFrame(frame);
     }
