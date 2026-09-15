@@ -128,8 +128,9 @@
         const a = Math.min(1, (person.speechUntil - now) / 120);
         ctx.save(); ctx.globalAlpha = Math.min(1, a * 1.4); ctx.translate(person.x, person.y - person.r - 34);
         ctx.font = '700 18px system-ui, sans-serif'; const label = person.speech; const bubbleWidth = ctx.measureText(label).width + 26;
-        ctx.fillStyle = '#fffdf8'; ctx.beginPath(); ctx.roundRect(-bubbleWidth / 2, -18, bubbleWidth, 35, 17); ctx.fill();
-        ctx.fillStyle = '#3e352f'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, 0, 0); ctx.restore();
+        const isOuch = label === '아야.';
+        ctx.fillStyle = isOuch ? '#df4c45' : '#fffdf8'; ctx.beginPath(); ctx.roundRect(-bubbleWidth / 2, -18, bubbleWidth, 35, 17); ctx.fill();
+        ctx.fillStyle = isOuch ? '#ffffff' : '#3e352f'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, 0, 0); ctx.restore();
       }
     }
     function frame(now) {
