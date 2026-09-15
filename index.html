@@ -22,7 +22,7 @@
       x: 0, y: 0, r: 19 + (i % 4) * 3,
       vx: (i % 2 ? -1 : 1) * (1.1 + (i % 6) * .16),
       vy: (i % 3 - 1) * .7 + .9, angle: i * .7, pausedUntil: 0,
-      startled: 0, lastHit: 0, hair: i % 5,
+      startled: 0, lastHit: 0, lastBump: 0, speechUntil: 0, speech: '', hair: i % 5,
       color: `hsl(${Math.round(i * 360 / 100)} 68% 57%)`
     }));
     let width = 0, height = 0, ratio = 1, last = performance.now();
@@ -49,10 +49,38 @@
       if (Math.hypot(dx, dy) < person.r + 15) {
         person.lastHit = now;
         person.pausedUntil = now + 820;
+        person.speechUntil = now + 820;
+        person.speech = '아야.';
         person.startled = 1;
         const d = Math.max(1, Math.hypot(dx, dy));
         person.vx = -dx / d * (1.75 + Math.random() * .55);
         person.vy = -dy / d * (1.35 + Math.random() * .55);
+      }
+    }
+    function collidePeople(now) {
+      for (let i = 0; i < people.length; i++) {
+        for (let j = i + 1; j < people.length; j++) {
+          const a = people[i], b = people[j];
+          let dx = b.x - a.x, dy = b.y - a.y;
+          let distance = Math.hypot(dx, dy);
+          const minimum = a.r + b.r;
+          if (distance >= minimum) continue;
+          if (distance < .01) { dx = 1; dy = 0; distance = 1; }
+          const nx = dx / distance, ny = dy / distance;
+          const overlap = minimum - distance;
+          a.x -= nx * overlap / 2; a.y -= ny * overlap / 2;
+          b.x += nx * overlap / 2; b.y += ny * overlap / 2;
+          const relativeSpeed = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+          if (relativeSpeed < 0) {
+            a.vx += relativeSpeed * nx; a.vy += relativeSpeed * ny;
+            b.vx -= relativeSpeed * nx; b.vy -= relativeSpeed * ny;
+          }
+          if (now - a.lastBump > 520 && now - b.lastBump > 520) {
+            a.lastBump = b.lastBump = now;
+            a.speechUntil = b.speechUntil = now + 650;
+            a.speech = b.speech = '어이쿠.';
+          }
+        }
       }
     }
     function drawPerson(person, now) {
@@ -94,11 +122,12 @@
       ctx.beginPath(); ctx.moveTo(-29, 10); ctx.lineTo(-43, 23); ctx.moveTo(29, 10); ctx.lineTo(43, 23); ctx.stroke();
       ctx.strokeStyle = '#3e352f'; ctx.lineWidth = 10; ctx.beginPath(); ctx.moveTo(-16, 33); ctx.lineTo(-27, 43); ctx.moveTo(16, 33); ctx.lineTo(27, 43); ctx.stroke();
       ctx.restore();
-      if (now < person.pausedUntil) {
-        const a = Math.min(1, (person.pausedUntil - now) / 120);
+      if (now < person.speechUntil) {
+        const a = Math.min(1, (person.speechUntil - now) / 120);
         ctx.save(); ctx.globalAlpha = Math.min(1, a * 1.4); ctx.translate(person.x, person.y - person.r - 34);
-        ctx.fillStyle = '#fffdf8'; ctx.beginPath(); ctx.roundRect(-31, -18, 62, 35, 17); ctx.fill();
-        ctx.fillStyle = '#3e352f'; ctx.font = '700 18px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('아야.', 0, 0); ctx.restore();
+        ctx.font = '700 18px system-ui, sans-serif'; const label = person.speech; const bubbleWidth = ctx.measureText(label).width + 26;
+        ctx.fillStyle = '#fffdf8'; ctx.beginPath(); ctx.roundRect(-bubbleWidth / 2, -18, bubbleWidth, 35, 17); ctx.fill();
+        ctx.fillStyle = '#3e352f'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, 0, 0); ctx.restore();
       }
     }
     function frame(now) {
@@ -115,8 +144,9 @@
           if (person.x < person.r || person.x > width - person.r) { person.vx *= -1; person.x = Math.max(person.r, Math.min(width - person.r, person.x)); }
           if (person.y < person.r || person.y > height - person.r) { person.vy *= -1; person.y = Math.max(person.r, Math.min(height - person.r, person.y)); }
         }
-        drawPerson(person, now);
       });
+      collidePeople(now);
+      people.forEach(person => drawPerson(person, now));
       if (pointer.active) { ctx.strokeStyle = 'rgba(62,53,47,.45)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(pointer.x, pointer.y, 8, 0, Math.PI * 2); ctx.stroke(); }
       requestAnimationFrame(frame);
     }
