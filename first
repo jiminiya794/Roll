@@ -18,12 +18,11 @@
     const canvas = document.getElementById('art');
     const ctx = canvas.getContext('2d');
     const pointer = { x: -1000, y: -1000, active: false };
-    const colors = ['#e66c56', '#5b9bd5', '#f2b84b', '#7ebc86', '#a77ac6', '#e78aaf', '#4fb6ad'];
-    const people = colors.map((color, i) => ({
-      x: 120 + (i % 4) * 165, y: 135 + Math.floor(i / 4) * 175,
-      r: 39 + (i % 3) * 4, vx: (i % 2 ? -1 : 1) * (1.35 + i * .17),
-      vy: (i % 3 - 1) * .65 + 1.1, angle: i * .7, pausedUntil: 0,
-      startled: 0, lastHit: 0, color
+    const people = Array.from({ length: 24 }, (_, i) => ({
+      x: 0, y: 0, r: 19 + (i % 4) * 3,
+      vx: (i % 2 ? -1 : 1) * (1.1 + (i % 6) * .16),
+      vy: (i % 3 - 1) * .7 + .9, angle: i * .7, pausedUntil: 0,
+      startled: 0, lastHit: 0, color: `hsl(${(i * 47 + 8) % 360} 67% 60%)`
     }));
     let width = 0, height = 0, ratio = 1, last = performance.now();
 
@@ -32,9 +31,11 @@
       width = innerWidth; height = innerHeight;
       canvas.width = width * ratio; canvas.height = height * ratio;
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      people.forEach(person => {
-        person.x = Math.min(Math.max(person.r + 10, person.x), width - person.r - 10);
-        person.y = Math.min(Math.max(person.r + 10, person.y), height - person.r - 10);
+      const columns = Math.max(4, Math.floor(width / 94));
+      const rows = Math.ceil(people.length / columns);
+      people.forEach((person, i) => {
+        person.x = ((i % columns) + .5) * width / columns;
+        person.y = (Math.floor(i / columns) + .5) * height / rows;
       });
     }
     addEventListener('resize', resize); resize();
