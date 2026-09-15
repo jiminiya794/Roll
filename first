@@ -18,12 +18,12 @@
     const canvas = document.getElementById('art');
     const ctx = canvas.getContext('2d');
     const pointer = { x: -1000, y: -1000, active: false };
-    const people = Array.from({ length: 50 }, (_, i) => ({
+    const people = Array.from({ length: 80 }, (_, i) => ({
       x: 0, y: 0, r: 19 + (i % 4) * 3,
       vx: (i % 2 ? -1 : 1) * (1.1 + (i % 6) * .16),
       vy: (i % 3 - 1) * .7 + .9, angle: i * .7, pausedUntil: 0,
       startled: 0, lastHit: 0, hair: i % 5,
-      color: `hsl(${Math.round(i * 360 / 50)} 68% 57%)`
+      color: `hsl(${Math.round(i * 360 / 80)} 68% 57%)`
     }));
     let width = 0, height = 0, ratio = 1, last = performance.now();
 
