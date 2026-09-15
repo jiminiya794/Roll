@@ -18,6 +18,7 @@
     const canvas = document.getElementById('art');
     const ctx = canvas.getContext('2d');
     const pointer = { x: -1000, y: -1000, active: false };
+    const collisionWords = ['어이쿠.', '앗.', '아이고.', '으악.', '죄송해요.', '깜짝이야.'];
     const people = Array.from({ length: 100 }, (_, i) => ({
       x: 0, y: 0, r: 19 + (i % 4) * 3,
       vx: (i % 2 ? -1 : 1) * (1.1 + (i % 6) * .16),
@@ -78,7 +79,8 @@
           if (now - a.lastBump > 520 && now - b.lastBump > 520) {
             a.lastBump = b.lastBump = now;
             a.speechUntil = b.speechUntil = now + 650;
-            a.speech = b.speech = '어이쿠.';
+            a.speech = collisionWords[Math.floor(Math.random() * collisionWords.length)];
+            b.speech = collisionWords[Math.floor(Math.random() * collisionWords.length)];
           }
         }
       }
